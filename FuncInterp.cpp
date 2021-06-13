@@ -67,7 +67,7 @@ inline void FuncTree::insertOperation(
    int prec = precedence[findChar(operators, op)];
 
    //BUG: because equal precedence ops are evaled left to right, need to go until first less precdence op found
-   while(funcs.size() > 0 && precedence[findChar(operators, funcs.top()->getVal_char())] > prec){
+   while(funcs.size() > 0 && precedence[findChar(operators, funcs.top()->getVal_char())] >= prec){
       funcs.pop();
    }
    if(funcs.size() == 0){
