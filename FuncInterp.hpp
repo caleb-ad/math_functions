@@ -131,6 +131,12 @@ private:
       while(*it == ' ' && *it != ')') it++;
    }
 
+   static bool isSingleVal(FuncTree &root){
+   return root.lchild->lchild == NULL &&
+          root.lchild->rchild == NULL &&
+          root.rchild == NULL;
+   }
+
    void updateValue(double d){
       if(mode != 0){
          throw std::invalid_argument("attempt to update char node with double");

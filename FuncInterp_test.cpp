@@ -54,7 +54,18 @@ struct testFuncInterp : public fructose::test_base< testFuncInterp >{
       testErrStr("())", "Malformed function: unnecesary parentheses, or empty function");
       testErrStr("3*", "Malformed function: operator without rvalue");
       testErrStr("(3*2)-", "Malformed function: operator without rvalue");
-      testErrStr("*(x^3)", "Malformed function: invalid variable or value");
+      testErrStr("*(x^3)", "Malformed function: unrecognised variable or invalid value");
+   }
+
+   void testValues(const std::string& name){
+      testStr("x", "(x)");
+      testStr("-123", "(-123)");
+      testStr("123.456", "(123.456)");
+      testStr("-123.456", "(123.456)");
+      testStr(".123456", "(.123456)");
+      testStr("-.123456", "(-.123456)");
+      testErrStr("-123.45.6", "Malformed function: unrecognised variable or invalid value");
+      testErrStr("y", "Malformed function: unrecognised variable or invalid value");
    }
 
    void testErrStr(string totest, string result){
@@ -80,5 +91,6 @@ int main(int argc, char **argv){
    tester.add_test("correct variable identification", &testFuncInterp::testVariable);
    tester.add_test("error and error messages", &testFuncInterp::testErrors);
    tester.add_test("parentheses", &testFuncInterp::testParentheses);
+   tester.add_test("interesting values", &testFuncInterp::testValues);
    return tester.run(argc, argv);
 }

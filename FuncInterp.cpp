@@ -6,6 +6,7 @@
 // -implicit multiplication
 //    -between certain symbols when an operator is expected
 //    -implicit multiplication by -1
+// -test large values
 
 constexpr char FuncTree::operators[6];
 constexpr int FuncTree::precedence[5];
@@ -14,10 +15,17 @@ constexpr char FuncTree::numericals[10];
 //increments begin to character beyond last character in the found number
 double FuncTree::doublefromString(
    std::string::iterator &begin,
-   string &func){
+   string &func)
+{
    unsigned ibegin = std::distance(func.begin(), begin);
    unsigned end = ibegin;
    bool decimal_flag = false;
+
+   if(func[end] == '-'){
+      end++;
+      begin++;
+   }
+
    while(end < func.length() && (strchr(numericals, func[end]) != NULL || func[end] == '.')){
       if(func[end] == '.'){
          if(decimal_flag){
@@ -45,7 +53,7 @@ inline int FuncTree::expectValue(
          iter--;
       }
       catch(std::invalid_argument& ive){
-         throw function_structure("Malformed function: invalid variable or value");
+         return -1;
       }
    }
    return 0;
@@ -105,7 +113,10 @@ FuncTree* FuncTree::sub_func(string::iterator &it, string &func){
                it++;
                funcs.top()->lchild = sub_func(it, func);
             }
-            else expectValue(funcs.top()->lchild, it, func);
+            else if(expectValue(funcs.top()->lchild, it, func) < 0){
+               delete root;
+               throw function_structure("Malformed function: unrecognised variable or invalid value");
+            }
             state = expected::OP;
 
          break;
@@ -131,7 +142,10 @@ FuncTree* FuncTree::sub_func(string::iterator &it, string &func){
                it++;
                funcs.top()->rchild = sub_func(it, func);
             }
-            else expectValue(funcs.top()->rchild, it, func);
+            else if(expectValue(funcs.top()->rchild, it, func) < 0){
+               delete root;
+               throw function_structure("Malformed function: unrecognised variable or invalid value");
+            }
             state = expected::OP;
          break;
       }
@@ -145,7 +159,7 @@ FuncTree* FuncTree::sub_func(string::iterator &it, string &func){
       throw function_structure("Malformed function: imbalanced parentheses");
    }
 
-   if(root != NULL && root->getVal_char() == '\0'){
+   if(root != NULL && root->getVal_char() == '\0' && !isSingleVal(*root)){
       delete root;
       throw function_structure("Malformed function: unnecesary parentheses, or empty function");
    }
