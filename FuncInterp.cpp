@@ -1,9 +1,11 @@
 #include "FuncInterp.hpp"
 
 //TODO
-// -negation
+// -negatve numbers
 // -sin, cos, ln, e, pi
-// -impliciti multiplication
+// -implicit multiplication
+//    -between certain symbols when an operator is expected
+//    -implicit multiplication by -1
 
 constexpr char FuncTree::operators[6];
 constexpr int FuncTree::precedence[5];
@@ -137,6 +139,7 @@ FuncTree* FuncTree::sub_func(string::iterator &it, string &func){
       consumeSpaces(it);
    }
 
+   //check for error conditions
    if(it == func.end()){
       delete root;
       throw function_structure("Malformed function: imbalanced parentheses");
@@ -145,6 +148,11 @@ FuncTree* FuncTree::sub_func(string::iterator &it, string &func){
    if(root != NULL && root->getVal_char() == '\0'){
       delete root;
       throw function_structure("Malformed function: unnecesary parentheses, or empty function");
+   }
+
+   if(state == expected::RVAL){
+      delete root;
+      throw function_structure("Malformed function: operator without rvalue");
    }
 
    return root;

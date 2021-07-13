@@ -17,6 +17,7 @@ int main(){
          func->print();
          std::cout << std::endl;
       }
+      delete func;
 
    }
    return 0;
