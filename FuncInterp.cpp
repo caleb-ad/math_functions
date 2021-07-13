@@ -1,11 +1,15 @@
 #include "FuncInterp.hpp"
 
+//TODO
+// -negation
+// -sin, cos, ln, e, pi
+// -impliciti multiplication
+
 constexpr char FuncTree::operators[6];
 constexpr int FuncTree::precedence[5];
 constexpr char FuncTree::variables[3];
 constexpr char FuncTree::numericals[10];
 //increments begin to character beyond last character in the found number
-//TODO: function should not find more than 1 decimal in a number
 double FuncTree::doublefromString(
    std::string::iterator &begin,
    string &func){
@@ -66,13 +70,12 @@ inline void FuncTree::insertOperation(
 {
    int prec = precedence[findChar(operators, op)];
 
-   //BUG: because equal precedence ops are evaled left to right, need to go until first less precdence op found
    while(funcs.size() > 0 && precedence[findChar(operators, funcs.top()->getVal_char())] >= prec){
       funcs.pop();
    }
    if(funcs.size() == 0){
       auto tmp = new FuncTree(op);
-      tmp->lchild = funcs.top();
+      tmp->lchild = root;
       funcs.push(tmp);
       root = tmp;
    }
@@ -84,7 +87,6 @@ inline void FuncTree::insertOperation(
    }
 }
 
-//BUG: new failure not checked
 FuncTree* FuncTree::sub_func(string::iterator &it, string &func){
    std::stack<FuncTree* > funcs;
    funcs.push(new FuncTree('\0', true));

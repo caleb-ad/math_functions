@@ -1,7 +1,10 @@
 #include <fructose/fructose.h>
+#include <ctime>
+#include <iostream>
 #include "FuncInterp.hpp"
 
 struct testFuncInterp : public fructose::test_base< testFuncInterp >{
+
    void testSBO(const std::string& name){
       testStr("2+2", "((2)+(2))");
       testStr("2-2", "((2)-(2))");
@@ -17,6 +20,8 @@ struct testFuncInterp : public fructose::test_base< testFuncInterp >{
       testStr("1+3*4*5+2*6+7", "((1)+(((3)*((4)*(5)))+(((2)*(6))+(7))))");
       testStr("1-3/4*5+2*6-7", "((1)-(((3)/((4)*(5)))+(((2)*(6))-(7))))");
       testStr("1+2*3^4*5+6", "((1)+(((2)*(((3)^(4))*(5)))+(6)))");
+      testStr("1+2*3*4^5^6*7+8", "((1)+(((2)*((3)*(((4)^((5)^(6)))*(7))))+(8)))");
+      testStr("1+2*3^4*5*6^7+8", "((1)+(((2)*(((3)^(4))*((5)*((6)^(7)))))+(8)))");
    }
 
    void testParentheses(const std::string& name){
@@ -46,6 +51,9 @@ struct testFuncInterp : public fructose::test_base< testFuncInterp >{
       testErrStr("", "Malformed function: unnecesary parentheses, or empty function");
       testErrStr("()", "Malformed function: unnecesary parentheses, or empty function");
       testErrStr("())", "Malformed function: unnecesary parentheses, or empty function");
+      //testErrStr("3*", "Malformed function: unnecesary parentheses, or empty function");
+      //testErrStr("(3*2)-", "Malformed function: unnecesary parentheses, or empty function");
+      testErrStr("*(x^3)", "Malformed function: invalid variable or value");
    }
 
    void testErrStr(string totest, string result){
@@ -66,10 +74,10 @@ struct testFuncInterp : public fructose::test_base< testFuncInterp >{
 
 int main(int argc, char **argv){
    testFuncInterp tester;
-   tester.add_test("test Binary Operations", &testFuncInterp::testSBO);
-   tester.add_test("test expression with unnessecary spaces", &testFuncInterp::testSpaces);
-   tester.add_test("test correct variable identification", &testFuncInterp::testVariable);
-   tester.add_test("test error and error messages", &testFuncInterp::testErrors);
-   tester.add_test("test parentheses", &testFuncInterp::testParentheses);
+   tester.add_test("Binary Operations", &testFuncInterp::testSBO);
+   tester.add_test("expression with unnessecary spaces", &testFuncInterp::testSpaces);
+   tester.add_test("correct variable identification", &testFuncInterp::testVariable);
+   tester.add_test("error and error messages", &testFuncInterp::testErrors);
+   tester.add_test("parentheses", &testFuncInterp::testParentheses);
    return tester.run(argc, argv);
 }
