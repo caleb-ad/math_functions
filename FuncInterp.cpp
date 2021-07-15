@@ -161,8 +161,7 @@ FuncTree* FuncTree::sub_func(string::iterator &it, string &func){
       throw function_structure("Malformed function: imbalanced parentheses");
    }
 
-   if(root != NULL && root->getVal_char() == '\0' && !isValue(root->lchild)){
-      //better way to distinguish this condition?
+   if(root == NULL || root->lchild == NULL || funcs.size() != 1){
       delete root;
       throw function_structure("Malformed function: unnecesary parentheses, or empty function");
    }
