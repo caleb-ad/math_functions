@@ -3,6 +3,7 @@
 //TODO
 // -evaluate for multivariable
 // -sin, cos, ln, e, pi
+// -fix print null characters when function is single value
 // -simplify and optimize algorithms
 // -implicit multiplication
 //    -between certain symbols when an operator is expected
@@ -161,14 +162,9 @@ FuncTree* FuncTree::sub_func(string::iterator &it, string &func){
       throw function_structure("Malformed function: imbalanced parentheses");
    }
 
-   if(root == NULL || root->lchild == NULL || funcs.size() != 1){
+   if(root == NULL || state == expected::LVAL || (root->rchild == NULL && state == expected::RVAL)){
       delete root;
-      throw function_structure("Malformed function: unnecesary parentheses, or empty function");
-   }
-
-   if(state == expected::RVAL){
-      delete root;
-      throw function_structure("Malformed function: operator without rvalue");
+      throw function_structure("Malformed function");
    }
 
    return root;
