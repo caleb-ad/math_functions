@@ -1,8 +1,9 @@
 #include "FuncInterp.hpp"
 
 //TODO
-// -negatve numbers
+// -evaluate for multivariable
 // -sin, cos, ln, e, pi
+// -simplify and optimize algorithms
 // -implicit multiplication
 //    -between certain symbols when an operator is expected
 //    -implicit multiplication by -1
@@ -12,6 +13,7 @@ constexpr char FuncTree::operators[6];
 constexpr int FuncTree::precedence[5];
 constexpr char FuncTree::variables[3];
 constexpr char FuncTree::numericals[10];
+
 //increments begin to character beyond last character in the found number
 double FuncTree::doublefromString(
    std::string::iterator &begin,
@@ -59,7 +61,7 @@ inline int FuncTree::expectValue(
    return 0;
 }
 
-//add flag to allow implicit multiplication
+//add implicit multiplication
 inline int FuncTree::expectOperator(char &op, string::iterator &iter){
    int cprec, pos;
 
@@ -159,7 +161,8 @@ FuncTree* FuncTree::sub_func(string::iterator &it, string &func){
       throw function_structure("Malformed function: imbalanced parentheses");
    }
 
-   if(root != NULL && root->getVal_char() == '\0' && !isSingleVal(*root)){
+   if(root != NULL && root->getVal_char() == '\0' && !isValue(root->lchild)){
+      //better way to distinguish this condition?
       delete root;
       throw function_structure("Malformed function: unnecesary parentheses, or empty function");
    }

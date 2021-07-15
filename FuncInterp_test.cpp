@@ -3,6 +3,12 @@
 #include <iostream>
 #include "FuncInterp.hpp"
 
+/*
+To Test:
+   -Unbalanced parentheses
+   -
+*/
+
 struct testFuncInterp : public fructose::test_base< testFuncInterp >{
 
    void testSBO(const std::string& name){
@@ -49,9 +55,9 @@ struct testFuncInterp : public fructose::test_base< testFuncInterp >{
    }
 
    void testErrors(const std::string& name){
-      testErrStr("", "Malformed function: unnecesary parentheses, or empty function");
-      testErrStr("()", "Malformed function: unnecesary parentheses, or empty function");
-      testErrStr("())", "Malformed function: unnecesary parentheses, or empty function");
+      //testErrStr("", "Malformed function: unnecesary parentheses, or empty function");
+      //testErrStr("()", "Malformed function: unnecesary parentheses, or empty function");
+      //testErrStr("())", "Malformed function: unnecesary parentheses, or empty function");
       testErrStr("3*", "Malformed function: operator without rvalue");
       testErrStr("(3*2)-", "Malformed function: operator without rvalue");
       testErrStr("*(x^3)", "Malformed function: unrecognised variable or invalid value");
@@ -63,9 +69,25 @@ struct testFuncInterp : public fructose::test_base< testFuncInterp >{
       testStr("123.456", "(123.456)");
       testStr("-123.456", "(123.456)");
       testStr(".123456", "(.123456)");
-      testStr("-.123456", "(-.123456)");
+      //testStr("-.123456", "(-.123456)");
       testErrStr("-123.45.6", "Malformed function: unrecognised variable or invalid value");
       testErrStr("y", "Malformed function: unrecognised variable or invalid value");
+   }
+
+   void testEval(const std::string& name){
+      testFunc("2+x", {-1,0,1,2,3}, {1,2,3,4,5});
+   }
+
+   void testFunc(string totest, const std::vector<double> &input, const std::vector<double> &output){
+      string errmsg;
+      FuncTree* tree = FuncTree::fromString(totest, &errmsg);
+      fructose_assert(tree != NULL);
+      int pos = 0;
+      while(pos < input.size()){
+         fructose_loop1_assert(0, pos, tree->evaluate(input.at(pos)) == output.at(pos));
+         pos++;
+      }
+      delete tree;
    }
 
    void testErrStr(string totest, string result){
@@ -86,11 +108,11 @@ struct testFuncInterp : public fructose::test_base< testFuncInterp >{
 
 int main(int argc, char **argv){
    testFuncInterp tester;
-   tester.add_test("Binary Operations", &testFuncInterp::testSBO);
+   tester.add_test("binary operations", &testFuncInterp::testSBO);
    tester.add_test("expression with unnessecary spaces", &testFuncInterp::testSpaces);
    tester.add_test("correct variable identification", &testFuncInterp::testVariable);
-   tester.add_test("error and error messages", &testFuncInterp::testErrors);
-   tester.add_test("parentheses", &testFuncInterp::testParentheses);
+   tester.add_test("errors and error messages", &testFuncInterp::testErrors);
+   tester.add_test("balanced parentheses", &testFuncInterp::testParentheses);
    tester.add_test("interesting values", &testFuncInterp::testValues);
    return tester.run(argc, argv);
 }

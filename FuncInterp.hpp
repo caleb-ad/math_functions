@@ -7,10 +7,19 @@
 #include <iterator>
 #include <stdexcept>
 #include <iostream>
-#include <sstream> //should add preprocessor to remove from release build
+#include <sstream> //should add preprocessor to remove from a release build
 #include <exception>
+#include <cmath>
+
+#include "func_except.hpp"
 
 using std::string;
+
+enum expected{
+   LVAL,
+   OP,
+   RVAL
+};
 
 class FuncTree{
 public:
@@ -103,6 +112,38 @@ public:
       }
    }
 
+   double evaluate(double val){
+      if(this->mode == 0){
+         return *((double*)(this->val));
+      }
+      else if(this->mode == 2){
+         return val;
+      }
+      else{
+      switch(*((unsigned char*)(this->val))){
+         case '+':
+            return this->lchild->evaluate(val) + this->rchild->evaluate(val);
+         break;
+         case '-':
+            return this->lchild->evaluate(val) - this->rchild->evaluate(val);
+         break;
+         case '*':
+            return this->lchild->evaluate(val) * this->rchild->evaluate(val);
+         break;
+         case '/':
+            return this->lchild->evaluate(val) / this->rchild->evaluate(val);
+         break;
+         case '^':
+            return std::pow(this->lchild->evaluate(val), this->rchild->evaluate(val));
+         break;
+         default:
+            throw function_structure("Function evaluation: invalid operation");
+         break;
+      }
+      }
+
+   }
+
    static FuncTree* fromString(string func, string *errmsg) noexcept;
 
 private:
@@ -131,10 +172,8 @@ private:
       while(*it == ' ' && *it != ')') it++;
    }
 
-   static bool isSingleVal(FuncTree &root){
-   return root.lchild->lchild == NULL &&
-          root.lchild->rchild == NULL &&
-          root.rchild == NULL;
+   static bool isValue(FuncTree *tree){
+      return tree != NULL && (tree->mode == 0 || tree->mode == 2);
    }
 
    void updateValue(double d){
@@ -180,24 +219,6 @@ private:
       out << ")";
    }
 
-};
-
-enum expected{
-   LVAL,
-   OP,
-   RVAL
-};
-
-class function_structure : std::exception{
-   string msg;
-public:
-   function_structure(const string &msg){
-      this->msg = msg;
-   }
-
-   const char* what(){
-      return msg.c_str();
-   }
 };
 
 #endif
