@@ -2,8 +2,6 @@
 #include <string>
 #include "FuncInterp.hpp"
 
-
-
 void inspectMode(){
    char input[100];
    while(1){

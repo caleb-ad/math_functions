@@ -10,10 +10,12 @@
 //    -implicit multiplication by -1
 // -test large values
 
-constexpr char FuncTree::operators[6];
-constexpr int FuncTree::precedence[5];
-constexpr char FuncTree::variables[3];
-constexpr char FuncTree::numericals[10];
+const char FuncTree::operators[6] = "+-*/^";;
+const int FuncTree::precedence[5] = {0,0,1,1,2};
+const char FuncTree::variables[3] = "xt";
+const char FuncTree::numericals[10] = "123456780";
+const static string constants[] = {"e", "pi"};
+const static string functions[] = {"sin", "cos", "tan", "ln", "sqrt"};
 
 //increments begin to character beyond last character in the found number
 double FuncTree::doublefromString(

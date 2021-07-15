@@ -23,14 +23,17 @@ enum expected{
 
 class FuncTree{
 public:
-   constexpr static char operators[] = "+-*/^";
-   constexpr static int precedence[] = {0,0,1,1,2};
-   constexpr static char variables[] = "xt";
-   constexpr static char numericals[] = "123456780";
+   const static char operators[];
+   const static int precedence[];
+   const static char variables[];
+   const static char numericals[];
+   const static string constants[];// = {"e", "pi"};
+   const static string functions[];// = {"sin", "cos", "tan", "ln", "sqrt"};
 
    FuncTree *lchild;
    FuncTree *rchild;
    void *val;
+   double (*value) (double a, double b);
    unsigned char mode;
 
    FuncTree(double d){
@@ -217,6 +220,26 @@ private:
       if(rchild != NULL)
          rchild->repr_help(out);
       out << ")";
+   }
+
+   double add(double a, double b){
+      return a + b;
+   }
+
+   double subtract(double a, double b){
+      return a - b;
+   }
+
+   double multiply(double a, double b){
+      return a * b;
+   }
+
+   double divide(double a, double b){
+      return a / b;
+   }
+
+   double exponentiation(double a, double b){
+      return std::pow(a, b);
    }
 
 };
