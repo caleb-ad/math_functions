@@ -33,8 +33,7 @@ public:
    FuncTree *lchild;
    FuncTree *rchild;
    void *val;
-   double (*value) (double a, double b);
-   unsigned char mode;
+   type mode;
 
    FuncTree(double d){
       this->val = new double(d);
@@ -150,6 +149,12 @@ public:
    static FuncTree* fromString(string func, string *errmsg) noexcept;
 
 private:
+
+   enum type{
+      VALUE,
+      VALUE_FUNC,
+      OPERATION
+   }
 
    static FuncTree* sub_func(string::iterator &it, string &func);
 
