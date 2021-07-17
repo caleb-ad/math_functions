@@ -51,13 +51,6 @@ public:
       this->rchild = NULL;
    }
 
-   FuncTree(char c){
-      this->lchild = NULL;
-      this->rchild = NULL;
-      this->val = new char(c);
-      this->mode = type::VARIABLE;
-   }
-
    FuncTree( double(*op_func)(double, double), char c){
       this->lchild = NULL;
       this->rchild = NULL;
@@ -80,7 +73,7 @@ public:
             this->op_func = &FuncTree::exponentiation;
          break;
          default:
-            throw std::invalid_argument("invalid operator");
+            this->mode = type::VARIABLE;
       }
    }
 
@@ -139,14 +132,6 @@ public:
       return out.str();
    }
 
-   int getOperation(char &op){
-      if(this->mode == type::OPERATOR){
-         op = *((char*)this->val);
-         return 0;
-      }
-      return -1;
-   }
-
    double evaluate(double val){
       if(this->mode == type::VALUE){
          return *((double*)(this->val));
@@ -170,11 +155,11 @@ private:
 
    static double doublefromString(std::string::iterator &begin, string &func);
 
-   static int expectValue(FuncTree*& current, string::iterator &iter, string &func);
+   static void expectValue(FuncTree*& current, string::iterator &iter, string &func);
 
-   static int expectOperator(char &op, string::iterator &iter);
+   static void expectOperator(char &op, string::iterator &iter);
 
-   static int insertOperation(std::stack<FuncTree* > &funcs, char op, FuncTree *&root);
+   static void insertOperation(std::stack<FuncTree* > &funcs, char op, FuncTree *&root);
 
    static int findChar(const char *cstr, char c){
       int pos = 0;
@@ -195,23 +180,37 @@ private:
    }
 
    void updateValue(double d){
-      if(mode != 0){
-         throw std::invalid_argument("attempt to update char node with double");
+      if(mode != type::VALUE){
+         throw std::invalid_argument("Parse Error: update non-value with double");
       }
       else{
-         delete (double*)this->val;
-         this->val = new double(d);
+         *(double*)this->val = d;
       }
    }
 
    void updateValue(char c){
-      if(mode != 1 && mode != 2){
-         throw std::invalid_argument("attempt to update non-double node with double");
+      if(mode != type::OPERATOR && mode != type::VARIABLE){
+         throw std::invalid_argument("Parse Error: update non op or var with char");
       }
       else{
-         delete (char*)this->val;
-         this->val = new char(c);
+         *(char*)this->val = c;
       }
+   }
+
+   void updateValue(string s){
+      if(mode != type::VALUE_FUNC){
+         throw std::invalid_argument("Parse Error: update non value function with string");
+      }
+      else{
+         *(string*)this->val = s;
+      }
+   }
+
+   char getOperation(){
+      if(this->mode == type::OPERATOR){
+         return *((char*)this->val);
+      }
+      throw function_structure("Parse Error: attempt to get operation of non-operator");
    }
 
    void repr_help(std::stringstream &out){

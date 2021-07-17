@@ -47,13 +47,13 @@ double FuncTree::doublefromString(
    return std::stod(func.substr(ibegin, end - ibegin), NULL);
 }
 
-inline int FuncTree::expectValue(
+inline void FuncTree::expectValue(
    FuncTree*& valNode,
    string::iterator &iter,
    string &func)
 {
    if(strchr(variables, *iter) != NULL){
-      valNode = new FuncTree(*iter, false);
+      valNode = new FuncTree(*iter);
    }
    else{
       try{
@@ -61,27 +61,23 @@ inline int FuncTree::expectValue(
          iter--;
       }
       catch(std::invalid_argument& ive){
-         return -1;
+         throw function_structure("Malformed function: unrecognised variable or invalid value");
       }
    }
-   return 0;
 }
 
 //add implicit multiplication
-inline int FuncTree::expectOperator(char &op, string::iterator &iter){
-   int cprec, pos;
+inline void FuncTree::expectOperator(char &op, string::iterator &iter){
 
-   if((pos = findChar(operators, *iter)) > -1){
+   if(findChar(operators, *iter) > -1){
       op = *iter;
-      cprec = precedence[pos];
    }
    else{
       throw function_structure("Malformed function: expected explicit operator");
    }
-   return cprec;
 }
 
-inline int FuncTree::insertOperation(
+inline void FuncTree::insertOperation(
    std::stack<FuncTree* > &funcs,
    char op,
    FuncTree *&root)
@@ -90,7 +86,7 @@ inline int FuncTree::insertOperation(
 
    while(funcs.size() > 0){
       if(funcs.top()->getOperation(op) != 0){
-         return -1;
+         throw function_structure("Parse Error: unexpected null operation");
       }
       if(precedence[findChar(operators, op)] < prec){
          break;
@@ -110,17 +106,16 @@ inline int FuncTree::insertOperation(
       funcs.top()->rchild = tmp;
       funcs.push(tmp);
    }
-   return 0;
 }
 
 FuncTree* FuncTree::sub_func(string::iterator &it, string &func){
    std::stack<FuncTree* > funcs;
-   funcs.push(new FuncTree('\0', true));
+   funcs.push(new FuncTree('\0'));
    FuncTree* root = funcs.top();
    expected state = expected::LVAL;
 
    consumeSpaces(it);
-
+   try{
    while(*it != ')'){
 
       switch(state){
@@ -129,25 +124,14 @@ FuncTree* FuncTree::sub_func(string::iterator &it, string &func){
                it++;
                funcs.top()->lchild = sub_func(it, func);
             }
-            else if(expectValue(funcs.top()->lchild, it, func) < 0){
-               delete root;
-               throw function_structure("Malformed function: unrecognised variable or invalid value");
-            }
+            expectValue(funcs.top()->lchild, it, func);
             state = expected::OP;
 
          break;
          case expected::OP:
-            if(*it == '('){
-               delete root;
-               throw function_structure("Malformed function: implicit multiplication not supported");
-            }
-
             char op;
-            if(expectOperator(op, it) < 0){
-               delete root;
-               throw function_structure("Malformed function: Expected operator");
-            }
-            if(funcs.top()->getVal_char() == '\0'){
+            expectOperator(op, it);
+            if(funcs.top()->getOperation() == '\0'){
                funcs.top()->updateValue(op);
             }
             else{
@@ -161,17 +145,17 @@ FuncTree* FuncTree::sub_func(string::iterator &it, string &func){
                it++;
                funcs.top()->rchild = sub_func(it, func);
             }
-            else if(expectValue(funcs.top()->rchild, it, func) < 0){
-               delete root;
-               throw function_structure("Malformed function: unrecognised variable or invalid value");
-            }
+            expectValue(funcs.top()->rchild, it, func);
             state = expected::OP;
          break;
       }
       it++;
       consumeSpaces(it);
    }
-
+   }catch(std::exception& exp){
+      delete root;
+      throw function_structure(exp.what());
+   }
    //check for error conditions
    if(it == func.end()){
       delete root;
@@ -181,6 +165,11 @@ FuncTree* FuncTree::sub_func(string::iterator &it, string &func){
    if(root == NULL || state == expected::LVAL || (root->rchild == NULL && state == expected::RVAL)){
       delete root;
       throw function_structure("Malformed function");
+   }
+
+   //for "functions" that are only a single value
+   if(root->getOperation() == '\0'){
+      return root->lchild;
    }
 
    return root;
