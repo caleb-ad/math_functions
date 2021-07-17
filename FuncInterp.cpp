@@ -3,6 +3,7 @@
 //TODO
 // -evaluate for multivariable
 // -sin, cos, ln, e, pi
+// -properly find and report all errors
 // -fix print null characters when function is single value
 // -simplify and optimize algorithms
 // -implicit multiplication
@@ -12,7 +13,7 @@
 
 const char FuncTree::operators[6] = "+-*/^";;
 const int FuncTree::precedence[5] = {0,0,1,1,2};
-const char FuncTree::variables[3] = "xt";
+const char FuncTree::variables[5] = "xyzt";
 const char FuncTree::numericals[10] = "123456780";
 const static string constants[] = {"e", "pi"};
 const static string functions[] = {"sin", "cos", "tan", "ln", "sqrt"};

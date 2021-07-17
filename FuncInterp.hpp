@@ -3,7 +3,7 @@
 
 #include <string>
 #include <stack>
-#include <string.h>
+#include <string>
 #include <iterator>
 #include <stdexcept>
 #include <iostream>
@@ -21,6 +21,13 @@ enum expected{
    RVAL
 };
 
+enum type{
+   VALUE,
+   VALUE_FUNC,
+   OPERATOR,
+   VARIABLE
+};
+
 class FuncTree{
 public:
    const static char operators[];
@@ -33,24 +40,38 @@ public:
    FuncTree *lchild;
    FuncTree *rchild;
    void *val;
+   double (*op_func)(double, double) = NULL;
+   double (*val_func)(double) = NULL;
    type mode;
 
    FuncTree(double d){
       this->val = new double(d);
-      this->mode = 0;
+      this->mode = type::VALUE;
       this->lchild = NULL;
       this->rchild = NULL;
    }
 
-   FuncTree(char c, bool operation = true){
-      this->val = new char(c);
+   FuncTree(char c){
       this->lchild = NULL;
       this->rchild = NULL;
-      if(operation){
-         mode = 1;
-      }else{
-         mode = 2;
-      }
+      this->val = new char(c);
+      this->mode = type::VARIABLE;
+   }
+
+   FuncTree( double(*op_func)(double, double), char c){
+      this->lchild = NULL;
+      this->rchild = NULL;
+      this->val = new char(c);
+      this->op_func = op_func;
+      this->mode = type::OPERATOR;
+   }
+
+   FuncTree( double(*val_func)(double), string name){
+      this->mode = type::VALUE_FUNC;
+      this->val = new string(name);
+      this->val_func = val_func;
+      this->lchild = NULL;
+      this->rchild = NULL;
    }
 
    ~FuncTree(){
@@ -58,8 +79,12 @@ public:
          delete lchild;
       if(rchild != NULL)
          delete rchild;
-      if(this->mode == 0){
+      //could be switch
+      if(this->mode == type::VALUE){
          delete (double*)this->val;
+      }
+      else if(this->mode == type::VALUE_FUNC){
+         delete (string*)this->val;
       }
       else{
          delete (char*)this->val;
@@ -74,15 +99,15 @@ public:
       }
 
       switch(this->mode){
-         case 0:
+         case VALUE:
             std::cout << *(double*)this->val;
             break;
-         case 1:
-            std::cout << *(char*)this->val;
+         case VALUE_FUNC:
+            std::cout << *(string*)this->val;
             break;
-         case 2:
+         default:
             std::cout << *(char*)this->val;
-            break;
+         break;
       }
 
       if(rchild != NULL)
@@ -115,46 +140,23 @@ public:
    }
 
    double evaluate(double val){
-      if(this->mode == 0){
+      if(this->mode == type::VALUE){
          return *((double*)(this->val));
       }
-      else if(this->mode == 2){
+      else if(this->mode == type::VALUE_FUNC){
+         return val_func(val);
+      }
+      else if(this->mode == type::OPERATOR{
+         return op_func(this->lchild->evaluate, this->rchild->evaluate);
+      }
+      else{//this->mode == type::VARIABLE
          return val;
       }
-      else{
-      switch(*((unsigned char*)(this->val))){
-         case '+':
-            return this->lchild->evaluate(val) + this->rchild->evaluate(val);
-         break;
-         case '-':
-            return this->lchild->evaluate(val) - this->rchild->evaluate(val);
-         break;
-         case '*':
-            return this->lchild->evaluate(val) * this->rchild->evaluate(val);
-         break;
-         case '/':
-            return this->lchild->evaluate(val) / this->rchild->evaluate(val);
-         break;
-         case '^':
-            return std::pow(this->lchild->evaluate(val), this->rchild->evaluate(val));
-         break;
-         default:
-            throw function_structure("Function evaluation: invalid operation");
-         break;
-      }
-      }
-
    }
 
    static FuncTree* fromString(string func, string *errmsg) noexcept;
 
 private:
-
-   enum type{
-      VALUE,
-      VALUE_FUNC,
-      OPERATION
-   }
 
    static FuncTree* sub_func(string::iterator &it, string &func);
 
@@ -227,23 +229,23 @@ private:
       out << ")";
    }
 
-   double add(double a, double b){
+   static double add(double a, double b){
       return a + b;
    }
 
-   double subtract(double a, double b){
+   static double subtract(double a, double b){
       return a - b;
    }
 
-   double multiply(double a, double b){
+   static double multiply(double a, double b){
       return a * b;
    }
 
-   double divide(double a, double b){
+   static double divide(double a, double b){
       return a / b;
    }
 
-   double exponentiation(double a, double b){
+   static double exponentiation(double a, double b){
       return std::pow(a, b);
    }
 
