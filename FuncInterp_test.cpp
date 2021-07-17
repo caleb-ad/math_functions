@@ -84,6 +84,7 @@ struct testFuncInterp : public fructose::test_base< testFuncInterp >{
       testFunc("1/x", {10000, 1000, 100, 10, 1}, {.0001, .001, .01, .1, 1});
       testFunc("x/2 + 3", {2, 4, 6, 8, 10, 12}, {4, 5, 6, 7, 8, 9});
       testFunc("x*2 + 8 - (x/3)", {6, 12, 18, 24, 30}, {18, 28, 38, 48, 58});
+      testFunc("4*3+6 - (200*1-50)", {1,2,3,4,5,6}, {-132, -132, -132, -132, -132, -132});
    }
 
    void testFunc(string totest, const std::vector<double> &input, const std::vector<double> &output){

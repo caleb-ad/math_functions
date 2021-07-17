@@ -54,7 +54,7 @@ inline void FuncTree::expectValue(
    string &func)
 {
    if(strchr(variables, *iter) != NULL){
-      valNode = new FuncTree(*iter);
+      valNode = new FuncTree(*iter, false);
    }
    else{
       try{
@@ -128,7 +128,7 @@ FuncTree* FuncTree::sub_func(string::iterator &it, string &func){
             char op;
             expectOperator(op, it);
             if(funcs.top()->getOperation() == '\0'){
-               funcs.top()->updateValue(op);
+               funcs.top()->updateOperation(op);
             }
             else{
                insertOperation(funcs, op, root);

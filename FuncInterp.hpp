@@ -14,6 +14,8 @@
 #include "func_except.hpp"
 
 using std::string;
+typedef double(*f_operation)(double, double);
+typedef double(*f_value)(double);
 
 enum expected{
    LVAL,
@@ -40,8 +42,8 @@ public:
    FuncTree *lchild;
    FuncTree *rchild;
    void *val;
-   double (*op_func)(double, double) = NULL;
-   double (*val_func)(double) = NULL;
+   f_operation op_func = NULL;
+   f_value val_func = NULL;
    type mode;
 
    FuncTree(double d){
@@ -51,33 +53,17 @@ public:
       this->rchild = NULL;
    }
 
-   FuncTree(char c){
+   FuncTree(char c, bool operation = true){
       this->lchild = NULL;
       this->rchild = NULL;
       this->val = new char(c);
-      this->mode = type::OPERATOR;
-      switch(c){
-         case '+':
-            this->op_func = &FuncTree::add;
-         break;
-         case '-':
-            this->op_func = &FuncTree::add;
-         break;
-         case '*':
-            this->op_func = &FuncTree::multiply;
-         break;
-         case '/':
-            this->op_func = &FuncTree::divide;
-         break;
-         case '^':
-            this->op_func = &FuncTree::exponentiation;
-         break;
-         case '\0':
-            this->op_func = NULL;
-         break;
-         default:
-            this->mode = type::VARIABLE;
+      if(operation){
+         this->mode = type::OPERATOR;
+         this->op_func = getOpFunc(c);
+      }else{
+         this->mode = type::VARIABLE;
       }
+
    }
 
    FuncTree( double(*val_func)(double), string name){
@@ -182,6 +168,17 @@ private:
       return tree != NULL && (tree->mode == 0 || tree->mode == 2);
    }
 
+   static f_operation getOpFunc(char c){
+      switch(c){
+         case '+': return &FuncTree::add;
+         case '-': return &FuncTree::subtract;
+         case '*': return &FuncTree::multiply;
+         case '/': return &FuncTree::divide;
+         case '^': return &FuncTree::exponentiation;
+         default: return NULL;
+      }
+   }
+
    void updateValue(double d){
       if(mode != type::VALUE){
          throw std::invalid_argument("Parse Error: update non-value with double");
@@ -206,6 +203,16 @@ private:
       }
       else{
          *(string*)this->val = s;
+      }
+   }
+
+   void updateOperation(char c){
+      if(mode != type::OPERATOR){
+         throw std::invalid_argument("Parse Error: attempt to update non operator");
+      }
+      else{
+         *(char*)this->val = c;
+         this->op_func = getOpFunc(c);
       }
    }
 

@@ -34,7 +34,7 @@ void evaluateMode(){
          std::cin.getline(input, 100);
          if(input[0] == 'q')
             break;
-         std::cout << func->evaluate(std::stod(input)) << std::endl;
+         std::cout << "=> " << func->evaluate(std::stod(input)) << std::endl;
       }
    }
    delete func;
