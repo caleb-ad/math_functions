@@ -66,17 +66,15 @@ struct testFuncInterp : public fructose::test_base< testFuncInterp >{
    }
 
    void testValues(const std::string& name){
-      /*
-      testStr("x", "((x))");
-      testStr("-123", "((-123))");
-      testStr("123.456", "((123.456))");
-      testStr("-123.456", "((-123.456))");
-      testStr(".123456", "((0.123456))");
-      testStr("-.123456", "((-0.123456))");
-      testStr("-0.01", "((-0.01))");
-      */
+      testStr("x", "(x)");
+      testStr("-123", "(-123)");
+      testStr("123.456", "(123.456)");
+      testStr("-123.456", "(-123.456)");
+      testStr(".123456", "(0.123456)");
+      testStr("-.123456", "(-0.123456)");
+      testStr("-0.01", "(-0.01)");
       testErrStr("-123.45.6", "Malformed function: unrecognised variable or invalid value");
-      testErrStr("y", "Malformed function: unrecognised variable or invalid value");
+      testErrStr("a", "Malformed function: unrecognised variable or invalid value");
    }
 
    void testEval(const std::string& name){

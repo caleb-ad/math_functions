@@ -118,8 +118,9 @@ FuncTree* FuncTree::sub_func(string::iterator &it, string &func){
             if(*it == '('){\
                it++;
                funcs.top()->lchild = sub_func(it, func);
+            }else{
+               expectValue(funcs.top()->lchild, it, func);
             }
-            expectValue(funcs.top()->lchild, it, func);
             state = expected::OP;
 
          break;
@@ -139,8 +140,9 @@ FuncTree* FuncTree::sub_func(string::iterator &it, string &func){
             if(*it == '('){
                it++;
                funcs.top()->rchild = sub_func(it, func);
+            }else{
+               expectValue(funcs.top()->rchild, it, func);
             }
-            expectValue(funcs.top()->rchild, it, func);
             state = expected::OP;
          break;
       }
