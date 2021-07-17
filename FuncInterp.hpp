@@ -62,8 +62,26 @@ public:
       this->lchild = NULL;
       this->rchild = NULL;
       this->val = new char(c);
-      this->op_func = op_func;
       this->mode = type::OPERATOR;
+      switch(c){
+         case '+':
+            this->op_func = &FuncTree::add;
+         break;
+         case '-':
+            this->op_func = &FuncTree::add;
+         break;
+         case '*':
+            this->op_func = &FuncTree::multiply;
+         break;
+         case '/':
+            this->op_func = &FuncTree::divide;
+         break;
+         case '^':
+            this->op_func = &FuncTree::exponentiation;
+         break;
+         default:
+            throw std::invalid_argument("invalid operator");
+      }
    }
 
    FuncTree( double(*val_func)(double), string name){
@@ -121,22 +139,12 @@ public:
       return out.str();
    }
 
-   char getVal_char(){
-      if(this->mode != 1 && this->mode != 2){
-         throw std::out_of_range("node does not store char");
+   int getOperation(char &op){
+      if(this->mode == type::OPERATOR){
+         op = *((char*)this->val);
+         return 0;
       }
-      else{
-         return *(char*)this->val;
-      }
-   }
-
-   double getVal_double(){
-      if(this->mode != 0){
-         throw std::out_of_range("node does not store double");
-      }
-      else{
-         return *(double*)this->val;
-      }
+      return -1;
    }
 
    double evaluate(double val){
@@ -146,8 +154,8 @@ public:
       else if(this->mode == type::VALUE_FUNC){
          return val_func(val);
       }
-      else if(this->mode == type::OPERATOR{
-         return op_func(this->lchild->evaluate, this->rchild->evaluate);
+      else if(this->mode == type::OPERATOR){
+         return op_func(this->lchild->evaluate(val), this->rchild->evaluate(val));
       }
       else{//this->mode == type::VARIABLE
          return val;
@@ -166,7 +174,7 @@ private:
 
    static int expectOperator(char &op, string::iterator &iter);
 
-   static void insertOperation(std::stack<FuncTree* > &funcs, char op, FuncTree *&root);
+   static int insertOperation(std::stack<FuncTree* > &funcs, char op, FuncTree *&root);
 
    static int findChar(const char *cstr, char c){
       int pos = 0;

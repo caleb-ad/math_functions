@@ -1,6 +1,8 @@
 #include "FuncInterp.hpp"
 
 //TODO
+// -fix expect operator state error handling (is it possible to find a null operation when doing an insert operation)
+// -test insertOperation behavior
 // -evaluate for multivariable
 // -sin, cos, ln, e, pi
 // -properly find and report all errors
@@ -79,16 +81,23 @@ inline int FuncTree::expectOperator(char &op, string::iterator &iter){
    return cprec;
 }
 
-inline void FuncTree::insertOperation(
+inline int FuncTree::insertOperation(
    std::stack<FuncTree* > &funcs,
    char op,
    FuncTree *&root)
 {
    int prec = precedence[findChar(operators, op)];
 
-   while(funcs.size() > 0 && precedence[findChar(operators, funcs.top()->getVal_char())] >= prec){
+   while(funcs.size() > 0){
+      if(funcs.top()->getOperation(op) != 0){
+         return -1;
+      }
+      if(precedence[findChar(operators, op)] < prec){
+         break;
+      }
       funcs.pop();
    }
+
    if(funcs.size() == 0){
       auto tmp = new FuncTree(op);
       tmp->lchild = root;
@@ -101,6 +110,7 @@ inline void FuncTree::insertOperation(
       funcs.top()->rchild = tmp;
       funcs.push(tmp);
    }
+   return 0;
 }
 
 FuncTree* FuncTree::sub_func(string::iterator &it, string &func){
@@ -133,7 +143,10 @@ FuncTree* FuncTree::sub_func(string::iterator &it, string &func){
             }
 
             char op;
-            expectOperator(op, it);
+            if(expectOperator(op, it) < 0){
+               delete root;
+               throw function_structure("Malformed function: Expected operator");
+            }
             if(funcs.top()->getVal_char() == '\0'){
                funcs.top()->updateValue(op);
             }
