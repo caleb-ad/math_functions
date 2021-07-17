@@ -29,6 +29,7 @@ struct testFuncInterp : public fructose::test_base< testFuncInterp >{
       testStr("1+2*3*4^5^6*7+8", "(((1)+((((2)*(3))*(((4)^(5))^(6)))*(7)))+(8))");
       testStr("1+2*3^4*5*6^7+8", "(((1)+((((2)*((3)^(4)))*(5))*((6)^(7))))+(8))");
       testStr("6/7/8", "(((6)/(7))/(8))");
+      testStr("7*8-9", "(((7)*(8))-(9))");
    }
 
    void testParentheses(const std::string& name){
@@ -109,6 +110,9 @@ struct testFuncInterp : public fructose::test_base< testFuncInterp >{
    void testStr(string totest, string result){
       string errmsg;
       FuncTree* tree = FuncTree::fromString(totest, &errmsg);
+      if(tree == NULL){
+         std::cout << errmsg << std::endl;
+      }
       fructose_assert(tree != NULL);
       fructose_assert_eq(tree->repr(), result);
       delete tree;

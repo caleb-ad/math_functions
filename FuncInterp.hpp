@@ -51,7 +51,7 @@ public:
       this->rchild = NULL;
    }
 
-   FuncTree( double(*op_func)(double, double), char c){
+   FuncTree(char c){
       this->lchild = NULL;
       this->rchild = NULL;
       this->val = new char(c);
@@ -71,6 +71,9 @@ public:
          break;
          case '^':
             this->op_func = &FuncTree::exponentiation;
+         break;
+         case '\0':
+            this->op_func = NULL;
          break;
          default:
             this->mode = type::VARIABLE;
@@ -220,15 +223,15 @@ private:
       }
 
       switch(this->mode){
-         case 0:
+         case VALUE:
             out << *(double*)this->val;
             break;
-         case 1:
-            out << *(char*)this->val;
+         case VALUE_FUNC:
+            out << *(string*)this->val;
             break;
-         case 2:
+         default:
             out << *(char*)this->val;
-            break;
+         break;
       }
 
       if(rchild != NULL)

@@ -1,6 +1,7 @@
 #include "FuncInterp.hpp"
 
 //TODO
+// -extra conditional in consumeSpaces
 // -fix expect operator state error handling (is it possible to find a null operation when doing an insert operation)
 // -test insertOperation behavior
 // -evaluate for multivariable
@@ -16,7 +17,7 @@
 const char FuncTree::operators[6] = "+-*/^";;
 const int FuncTree::precedence[5] = {0,0,1,1,2};
 const char FuncTree::variables[5] = "xyzt";
-const char FuncTree::numericals[10] = "123456780";
+const char FuncTree::numericals[11] = "1234567890";
 const static string constants[] = {"e", "pi"};
 const static string functions[] = {"sin", "cos", "tan", "ln", "sqrt"};
 
@@ -84,13 +85,7 @@ inline void FuncTree::insertOperation(
 {
    int prec = precedence[findChar(operators, op)];
 
-   while(funcs.size() > 0){
-      if(funcs.top()->getOperation(op) != 0){
-         throw function_structure("Parse Error: unexpected null operation");
-      }
-      if(precedence[findChar(operators, op)] < prec){
-         break;
-      }
+   while(funcs.size() > 0 && precedence[findChar(operators, funcs.top()->getOperation())] >= prec){
       funcs.pop();
    }
 
