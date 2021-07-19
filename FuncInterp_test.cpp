@@ -3,12 +3,6 @@
 #include <iostream>
 #include "FuncInterp.hpp"
 
-/*
-To Test:
-   -Unbalanced parentheses
-   -
-*/
-
 struct testFuncInterp : public fructose::test_base< testFuncInterp >{
 
    void testSBO(const std::string& name){

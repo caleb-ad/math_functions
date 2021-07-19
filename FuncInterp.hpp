@@ -2,8 +2,9 @@
 #define FUNCINTERP_HPP
 
 #include <string>
+#include <map>
+#include <cctype>
 #include <stack>
-#include <string>
 #include <iterator>
 #include <stdexcept>
 #include <iostream>
@@ -31,13 +32,12 @@ enum type{
 };
 
 class FuncTree{
-public:
+private:
    const static char operators[];
    const static int precedence[];
    const static char variables[];
-   const static char numericals[];
-   const static string constants[];// = {"e", "pi"};
-   const static string functions[];// = {"sin", "cos", "tan", "ln", "sqrt"};
+   const static std::map<string, double> constants;// = {"e", "pi"};
+   const static std::map<string, f_value> functions;// = {"sin", "cos", "tan", "ln", "sqrt"};
 
    FuncTree *lchild;
    FuncTree *rchild;
@@ -45,6 +45,8 @@ public:
    f_operation op_func = NULL;
    f_value val_func = NULL;
    type mode;
+
+public:
 
    FuncTree(double d){
       this->val = new double(d);
@@ -136,6 +138,24 @@ public:
       }
    }
 
+   static std::map<string, double> initConstants(){
+      std::map<string, double> c;
+      c["e"] = 2.71828182846;
+      c["pi"] = 3.14159265359;
+      return c;
+   }
+
+   static std::map<string, f_value> initFunctions(){
+      std::map<string, f_value> f;
+      f["sin"] = &std::sin;
+      f["cos"] = &std::cos;
+      f["tan"] = &std::tan;
+      f["sqrt"] = &std::sqrt;
+      f["ln"] = &std::log;
+      f["log"] = &std::log;
+      return f;
+   }
+
    static FuncTree* fromString(string func, string *errmsg) noexcept;
 
 private:
@@ -167,10 +187,6 @@ private:
       while(*it == ' ' /*&& *it != ')'*/) it++;
    }
 
-   static bool isValue(FuncTree *tree){
-      return tree != NULL && (tree->mode == 0 || tree->mode == 2);
-   }
-
    static f_operation getOpFunc(char c){
       switch(c){
          case '+': return &FuncTree::add;
@@ -182,31 +198,11 @@ private:
       }
    }
 
-   void updateValue(double d){
-      if(mode != type::VALUE){
-         throw std::invalid_argument("Parse Error: update non-value with double");
-      }
-      else{
-         *(double*)this->val = d;
-      }
-   }
-
-   void updateValue(char c){
-      if(mode != type::OPERATOR && mode != type::VARIABLE){
-         throw std::invalid_argument("Parse Error: update non op or var with char");
-      }
-      else{
-         *(char*)this->val = c;
-      }
-   }
-
-   void updateValue(string s){
-      if(mode != type::VALUE_FUNC){
-         throw std::invalid_argument("Parse Error: update non value function with string");
-      }
-      else{
-         *(string*)this->val = s;
-      }
+   static string getSymbol(string::iterator &it){
+      //symbols can only have english alphabetic characters
+      auto start = it;
+      while(isalpha(*it)) it++;
+      return string(start, it);
    }
 
    void updateOperation(char c){

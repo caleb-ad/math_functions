@@ -1,7 +1,7 @@
 #include "FuncInterp.hpp"
 
 // TODO
-// -remove updateValue() overloads?
+// -recognize specific cases of std::pow and other math and replace with relevant std::math function
 // -test insertOperation behavior, can it throw Parse Error?
 // -evaluate for multivariable
 // -sin, cos, ln, e, pi
@@ -16,12 +16,11 @@
 //  -More imbalanced parentheses
 //  -Weird values, with weird characters
 
-const char FuncTree::operators[6] = "+-*/^";;
-const int FuncTree::precedence[5] = {0,0,1,1,2};
-const char FuncTree::variables[5] = "xyzt";
-const char FuncTree::numericals[11] = "1234567890";
-const static string constants[] = {"e", "pi"};
-const static string functions[] = {"sin", "cos", "tan", "ln", "sqrt"};
+const char FuncTree::operators[] = "+-*/^";;
+const int FuncTree::precedence[] = {0,0,1,1,2};
+const char FuncTree::variables[] = "xyzt";
+const std::map<string, double> constants = FuncTree::initConstants();
+const std::map<string, f_value> functions = FuncTree::initFunctions();
 
 //increments begin to character beyond last character in the found number
 double FuncTree::doublefromString(
@@ -37,7 +36,7 @@ double FuncTree::doublefromString(
       begin++;
    }
 
-   while(end < func.length() && (strchr(numericals, func[end]) != NULL || func[end] == '.')){
+   while(end < func.length() && (isdigit(func[end]) || func[end] == '.')){
       if(func[end] == '.'){
          if(decimal_flag){
             throw std::invalid_argument("doubleFromString");
@@ -55,18 +54,35 @@ inline void FuncTree::expectValue(
    string::iterator &iter,
    string &func)
 {
-   if(strchr(variables, *iter) != NULL){
-      valNode = new FuncTree(*iter, false);
+   //matches variables last, because variables match only a single character
+   string sym = getSymbol(iter);
+   if(sym.size() > 0){
+      auto iter1 = constants.find(sym);
+      if(iter1 != constants.end()){
+         valNode = new FuncTree(iter1->second);
+      }
+      else{
+         auto iter2 = functions.find(sym);
+         if(iter2 != functions.end()){
+            valNode = new FuncTree(iter2->second, iter2->first);
+         }
+         else if(strchr(variables, *iter) != NULL){
+            valNode = new FuncTree(*iter, false);
+         }
+         else{
+            throw function_structure("Malformed function: unrecognised variable, constant, or function");
+         }
+      }
    }
    else{
       try{
          valNode = new FuncTree(doublefromString(iter, func));
-         iter--;
       }
       catch(std::invalid_argument& ive){
-         throw function_structure("Malformed function: unrecognised variable or invalid value");
+         throw function_structure("Malformed function: invalid value");
       }
    }
+   iter--; //sub_func should always advance iter to the first unseen token
 }
 
 inline void FuncTree::expectOperator(char &op, string::iterator &iter){
