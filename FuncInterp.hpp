@@ -161,7 +161,10 @@ private:
    }
 
    static void consumeSpaces(string::iterator &it){
-      while(*it == ' ' && *it != ')') it++;
+      /* depends on last character in string always being ')'
+      if string ends in spaces, can advance beyond end of string and
+      cause undefined behavior */
+      while(*it == ' ' /*&& *it != ')'*/) it++;
    }
 
    static bool isValue(FuncTree *tree){

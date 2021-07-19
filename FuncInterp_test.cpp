@@ -61,8 +61,12 @@ struct testFuncInterp : public fructose::test_base< testFuncInterp >{
       testErrStr("())", "Malformed function");
       testErrStr("(()", "Malformed function");
       testErrStr("3*", "Malformed function");
-      testErrStr("(3*2)-", "Malformed function");
       testErrStr("*(x^3)", "Malformed function: unrecognised variable or invalid value");
+      testErrStr("(3*2)-", "Malformed function");
+      testErrStr("(3*2)-4)", "Malformed function: imbalanced parentheses");
+      testErrStr("(3*2))-4)", "Malformed function: imbalanced parentheses");
+      testErrStr("((3*2))-4(7*8))", "Malformed function: expected explicit operator");
+      testErrStr("((3*2) - 4*((7*8))", "Malformed function: imbalanced parentheses");
    }
 
    void testValues(const std::string& name){

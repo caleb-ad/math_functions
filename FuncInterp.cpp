@@ -1,18 +1,20 @@
 #include "FuncInterp.hpp"
 
-//TODO
-// -extra conditional in consumeSpaces
-// -fix expect operator state error handling (is it possible to find a null operation when doing an insert operation)
-// -test insertOperation behavior
+// TODO
+// -remove updateValue() overloads?
+// -test insertOperation behavior, can it throw Parse Error?
 // -evaluate for multivariable
 // -sin, cos, ln, e, pi
 // -properly find and report all errors
-// -fix print null characters when function is single value
+// -update print and repr
 // -simplify and optimize algorithms
 // -implicit multiplication
 //    -between certain symbols when an operator is expected
-//    -implicit multiplication by -1
-// -test large values
+//    -implicit multiplication by -1, sometimes subtract other times multiply
+// -simplify expression algorithm
+// TOTEST
+//  -More imbalanced parentheses
+//  -Weird values, with weird characters
 
 const char FuncTree::operators[6] = "+-*/^";;
 const int FuncTree::precedence[5] = {0,0,1,1,2};
@@ -30,7 +32,7 @@ double FuncTree::doublefromString(
    unsigned end = ibegin;
    bool decimal_flag = false;
 
-   if(func[end] == '-'){
+   if(end < func.length() && func[end] == '-'){
       end++;
       begin++;
    }
@@ -67,7 +69,6 @@ inline void FuncTree::expectValue(
    }
 }
 
-//add implicit multiplication
 inline void FuncTree::expectOperator(char &op, string::iterator &iter){
 
    if(findChar(operators, *iter) > -1){
@@ -112,7 +113,9 @@ FuncTree* FuncTree::sub_func(string::iterator &it, string &func){
    consumeSpaces(it);
    try{
    while(*it != ')'){
-
+      if(it == func.end()){
+         throw function_structure("Malformed function: imbalanced parentheses");
+      }
       switch(state){
          case expected::LVAL:
             if(*it == '('){\
@@ -154,10 +157,6 @@ FuncTree* FuncTree::sub_func(string::iterator &it, string &func){
       throw function_structure(exp.what());
    }
    //check for error conditions
-   if(it == func.end()){
-      delete root;
-      throw function_structure("Malformed function: imbalanced parentheses");
-   }
 
    if(root == NULL || state == expected::LVAL || (root->rchild == NULL && state == expected::RVAL)){
       delete root;
@@ -176,7 +175,13 @@ FuncTree* FuncTree::fromString(string func, string *errmsg) noexcept{
    func.append(")");
    auto iter = func.begin();
    try{
-      return sub_func(iter, func);
+      auto tmp = sub_func(iter, func);
+      if(++iter != func.end()){
+         delete tmp;
+         *errmsg = "Malformed function: imbalanced parentheses";
+         return NULL;
+      }
+      return tmp;
    }
    catch(function_structure &fse){
       *errmsg = fse.what();
