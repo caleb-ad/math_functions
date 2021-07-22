@@ -3,6 +3,9 @@
 #include <iostream>
 #include "FuncInterp.hpp"
 
+#define PI 3.14159265359
+#define E 2.71828182846
+
 struct testFuncInterp : public fructose::test_base< testFuncInterp >{
 
    void testSBO(const std::string& name){
@@ -55,7 +58,7 @@ struct testFuncInterp : public fructose::test_base< testFuncInterp >{
       testErrStr("())", "Malformed function");
       testErrStr("(()", "Malformed function");
       testErrStr("3*", "Malformed function");
-      testErrStr("*(x^3)", "Malformed function: unrecognised variable or invalid value");
+      testErrStr("*(x^3)", "Malformed function: invalid value");
       testErrStr("(3*2)-", "Malformed function");
       testErrStr("(3*2)-4)", "Malformed function: imbalanced parentheses");
       testErrStr("(3*2))-4)", "Malformed function: imbalanced parentheses");
@@ -71,8 +74,23 @@ struct testFuncInterp : public fructose::test_base< testFuncInterp >{
       testStr(".123456", "(0.123456)");
       testStr("-.123456", "(-0.123456)");
       testStr("-0.01", "(-0.01)");
-      testErrStr("-123.45.6", "Malformed function: unrecognised variable or invalid value");
-      testErrStr("a", "Malformed function: unrecognised variable or invalid value");
+      testErrStr("-123.45.6", "Malformed function: invalid value");
+      testErrStr("a", "Malformed function: unrecognised variable, constant, or function");
+   }
+
+   void testValueFuncs(const std::string& name){
+      testFunc("sin(x)", {PI, PI/2, PI/3, 2*PI, 2.0/3.0*PI, 3.0/2.0*PI}, {0, 1, 0.866025403784, 0, 0.866025403784, -1});
+      testFunc("ln(x)", {1,2,3,4}, {0, 0.69314718056, 1.09861228867, 1.38629436112});
+      testFunc("sin(x/2)", {2*PI, PI, PI*2.0/3.0, 4*PI, 4.0/3.0*PI, 3.0*PI}, {0, 1, 0.866025403784, 0, 0.866025403784, -1});
+      testFunc("e^x*cos(x)", {1,2,3,4,5}, {1.46869393992, -3.07493232064, -19.8845308441, -35.6877324801, 42.0992010625});
+   }
+
+   void testConstants(const std::string& name){
+      testFunc("e", {1,2,3}, {E, E, E});
+      testFunc("pi", {1,2,3}, {PI, PI, PI});
+      testFunc("m", {1,2,3}, {.001, .001, .001});
+      testFunc("e*pi*m", {1,2,3}, {E*PI*.001, E*PI*.001, E*PI*.001,});
+      testErrStr("epi", "Malformed function: unrecognized variable, constant, or function");
    }
 
    void testEval(const std::string& name){
@@ -91,7 +109,7 @@ struct testFuncInterp : public fructose::test_base< testFuncInterp >{
       fructose_assert(tree != NULL);
       int pos = 0;
       while(pos < input.size()){
-         fructose_assert_double_eq(tree->evaluate(input.at(pos)), output.at(pos));
+         fructose_assert_double_eq_rel_abs(tree->evaluate(input.at(pos)), output.at(pos), .000001, .0000000001)
          pos++;
       }
       delete tree;
@@ -125,5 +143,6 @@ int main(int argc, char **argv){
    tester.add_test("balanced parentheses", &testFuncInterp::testParentheses);
    tester.add_test("interesting values", &testFuncInterp::testValues);
    tester.add_test("evaluation of function", &testFuncInterp::testEval);
+   tester.add_test("test evaluation of expressions with functions", &testFuncInterp::testValueFuncs);
    return tester.run(argc, argv);
 }

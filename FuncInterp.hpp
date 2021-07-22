@@ -8,7 +8,7 @@
 #include <iterator>
 #include <stdexcept>
 #include <iostream>
-#include <sstream> //should add preprocessor to remove from a release build
+#include <sstream>
 #include <exception>
 #include <cmath>
 
@@ -128,7 +128,7 @@ public:
          return *((double*)(this->val));
       }
       else if(this->mode == type::VALUE_FUNC){
-         return val_func(val);
+         return val_func(this->lchild->evaluate(val));
       }
       else if(this->mode == type::OPERATOR){
          return op_func(this->lchild->evaluate(val), this->rchild->evaluate(val));
@@ -142,6 +142,9 @@ public:
       std::map<string, double> c;
       c["e"] = 2.71828182846;
       c["pi"] = 3.14159265359;
+      c["m"] = .001;
+      c["u"] = .000001;
+      c["p"] = .000000001;
       return c;
    }
 

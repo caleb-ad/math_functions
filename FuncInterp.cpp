@@ -1,17 +1,19 @@
 #include "FuncInterp.hpp"
 
 // TODO
-// -recognize specific cases of std::pow and other math and replace with relevant std::math function
-// -test insertOperation behavior, can it throw Parse Error?
+// -functions that return an NAN or infinity
 // -evaluate for multivariable
-// -sin, cos, ln, e, pi
+// -recognize specific cases of std::pow and other math and replace with relevant std::math function
+// -pseudo-jit compilation
+// -test insertOperation behavior, can it throw Parse Error?
 // -properly find and report all errors
 // -update print and repr
 // -simplify and optimize algorithms
 // -implicit multiplication
 //    -between certain symbols when an operator is expected
 //    -implicit multiplication by -1, sometimes subtract other times multiply
-// -simplify expression algorithm
+//    -between combinations of constants and functions ex) esin(x)
+// -algorithm to simplify expression
 // TOTEST
 //  -More imbalanced parentheses
 //  -Weird values, with weird characters
@@ -19,8 +21,8 @@
 const char FuncTree::operators[] = "+-*/^";;
 const int FuncTree::precedence[] = {0,0,1,1,2};
 const char FuncTree::variables[] = "xyzt";
-const std::map<string, double> constants = FuncTree::initConstants();
-const std::map<string, f_value> functions = FuncTree::initFunctions();
+const std::map<string, double> FuncTree::constants = FuncTree::initConstants();
+const std::map<string, f_value> FuncTree::functions = FuncTree::initFunctions();
 
 //increments begin to character beyond last character in the found number
 double FuncTree::doublefromString(
@@ -65,9 +67,15 @@ inline void FuncTree::expectValue(
          auto iter2 = functions.find(sym);
          if(iter2 != functions.end()){
             valNode = new FuncTree(iter2->second, iter2->first);
+            if(*iter != '('){
+               throw function_structure("Malformed function: expected ( after function");
+            }
+            iter++;
+            valNode->lchild = sub_func(iter, func);
+            iter++;
          }
-         else if(strchr(variables, *iter) != NULL){
-            valNode = new FuncTree(*iter, false);
+         else if(sym.size() == 1 && strchr(variables, sym.at(0)) != NULL){
+            valNode = new FuncTree(sym.at(0), false);
          }
          else{
             throw function_structure("Malformed function: unrecognised variable, constant, or function");
