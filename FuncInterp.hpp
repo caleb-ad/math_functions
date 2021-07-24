@@ -123,18 +123,18 @@ public:
       return out.str();
    }
 
-   double evaluate(double val){
+   double evaluate(double eval_at){
       if(this->mode == type::VALUE){
          return *((double*)(this->val));
       }
       else if(this->mode == type::VALUE_FUNC){
-         return val_func(this->lchild->evaluate(val));
+         return val_func(this->lchild->evaluate(eval_at));
       }
       else if(this->mode == type::OPERATOR){
-         return op_func(this->lchild->evaluate(val), this->rchild->evaluate(val));
+         return op_func(this->lchild->evaluate(eval_at), this->rchild->evaluate(eval_at));
       }
       else{//this->mode == type::VARIABLE
-         return val;
+         return eval_at;
       }
    }
 

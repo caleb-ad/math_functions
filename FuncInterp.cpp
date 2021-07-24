@@ -86,7 +86,7 @@ inline void FuncTree::expectValue(
       try{
          valNode = new FuncTree(doublefromString(iter, func));
       }
-      catch(std::invalid_argument& ive){
+      catch(...){
          throw function_structure("Malformed function: invalid value");
       }
    }
