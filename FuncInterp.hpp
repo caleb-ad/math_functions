@@ -2,6 +2,7 @@
 #define FUNCINTERP_HPP
 
 #include <string>
+#include <string.h> //only for strchr, should be removed
 #include <map>
 #include <cctype>
 #include <stack>
@@ -11,8 +12,6 @@
 #include <sstream>
 #include <exception>
 #include <cmath>
-
-#include "func_except.hpp"
 
 using std::string;
 typedef double(*f_operation)(double, double);
@@ -150,6 +149,18 @@ private:
       return std::pow(a, b);
    }
 
+};
+
+class function_structure : std::exception{
+   string msg;
+public:
+   function_structure(const string &msg){
+      this->msg = msg;
+   }
+
+   const char* what() const noexcept override {
+      return msg.c_str();
+   }
 };
 
 #endif
