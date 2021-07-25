@@ -48,95 +48,19 @@ private:
 
 public:
 
-   FuncTree(double d){
-      this->val = new double(d);
-      this->mode = type::VALUE;
-      this->lchild = NULL;
-      this->rchild = NULL;
-   }
+   FuncTree(double d);
 
-   FuncTree(char c, bool operation = true){
-      this->lchild = NULL;
-      this->rchild = NULL;
-      this->val = new char(c);
-      if(operation){
-         this->mode = type::OPERATOR;
-         this->op_func = getOpFunc(c);
-      }else{
-         this->mode = type::VARIABLE;
-      }
+   FuncTree(char c, bool operation = true);
 
-   }
+   FuncTree( double(*val_func)(double), string name);
 
-   FuncTree( double(*val_func)(double), string name){
-      this->mode = type::VALUE_FUNC;
-      this->val = new string(name);
-      this->val_func = val_func;
-      this->lchild = NULL;
-      this->rchild = NULL;
-   }
+   ~FuncTree();
 
-   ~FuncTree(){
-      if(lchild != NULL)
-         delete lchild;
-      if(rchild != NULL)
-         delete rchild;
-      //could be switch
-      if(this->mode == type::VALUE){
-         delete (double*)this->val;
-      }
-      else if(this->mode == type::VALUE_FUNC){
-         delete (string*)this->val;
-      }
-      else{
-         delete (char*)this->val;
-      }
-      return;
-   }
+   void print();
 
-   void print(){
-      std::cout << "(";
-      if(lchild != NULL){
-         lchild->print();
-      }
+   string repr();
 
-      switch(this->mode){
-         case VALUE:
-            std::cout << *(double*)this->val;
-            break;
-         case VALUE_FUNC:
-            std::cout << *(string*)this->val;
-            break;
-         default:
-            std::cout << *(char*)this->val;
-         break;
-      }
-
-      if(rchild != NULL)
-         rchild->print();
-      std::cout << ")";
-   }
-
-   string repr(){
-      std::stringstream out;
-      repr_help(out);
-      return out.str();
-   }
-
-   double evaluate(double eval_at){
-      if(this->mode == type::VALUE){
-         return *((double*)(this->val));
-      }
-      else if(this->mode == type::VALUE_FUNC){
-         return val_func(this->lchild->evaluate(eval_at));
-      }
-      else if(this->mode == type::OPERATOR){
-         return op_func(this->lchild->evaluate(eval_at), this->rchild->evaluate(eval_at));
-      }
-      else{//this->mode == type::VARIABLE
-         return eval_at;
-      }
-   }
+   double evaluate(double eval_at);
 
    static std::map<string, double> initConstants(){
       std::map<string, double> c;
@@ -173,22 +97,9 @@ private:
 
    static void insertOperation(std::stack<FuncTree* > &funcs, char op, FuncTree *&root);
 
-   static int findChar(const char *cstr, char c){
-      int pos = 0;
-      while(*(cstr + pos) != '\0'){
-         if(c == *(cstr + pos))
-            return pos;
-         pos += 1;
-      }
-      return -1;
-   }
+   static int findChar(const char *cstr, char c);
 
-   static void consumeSpaces(string::iterator &it){
-      /* depends on last character in string always being ')'
-      if string ends in spaces, can advance beyond end of string and
-      cause undefined behavior */
-      while(*it == ' ' /*&& *it != ')'*/) it++;
-   }
+   static void consumeSpaces(string::iterator &it);
 
    static f_operation getOpFunc(char c){
       switch(c){
@@ -201,52 +112,13 @@ private:
       }
    }
 
-   static string getSymbol(string::iterator &it){
-      //symbols can only have english alphabetic characters
-      auto start = it;
-      while(isalpha(*it)) it++;
-      return string(start, it);
-   }
+   static string getSymbol(string::iterator &it);
 
-   void updateOperation(char c){
-      if(mode != type::OPERATOR){
-         throw std::invalid_argument("Parse Error: attempt to update non operator");
-      }
-      else{
-         *(char*)this->val = c;
-         this->op_func = getOpFunc(c);
-      }
-   }
+   void updateOperation(char c);
 
-   char getOperation(){
-      if(this->mode == type::OPERATOR){
-         return *((char*)this->val);
-      }
-      throw function_structure("Parse Error: attempt to get operation of non-operator");
-   }
+   char getOperation();
 
-   void repr_help(std::stringstream &out){
-      out << "(";
-      if(lchild != NULL){
-         lchild->repr_help(out);
-      }
-
-      switch(this->mode){
-         case VALUE:
-            out << *(double*)this->val;
-            break;
-         case VALUE_FUNC:
-            out << *(string*)this->val;
-            break;
-         default:
-            out << *(char*)this->val;
-         break;
-      }
-
-      if(rchild != NULL)
-         rchild->repr_help(out);
-      out << ")";
-   }
+   void repr_help(std::stringstream &out);
 
    static double add(double a, double b){
       return a + b;

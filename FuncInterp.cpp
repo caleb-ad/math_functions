@@ -24,6 +24,164 @@ const char FuncTree::variables[] = "xyzt";
 const std::map<string, double> FuncTree::constants = FuncTree::initConstants();
 const std::map<string, f_value> FuncTree::functions = FuncTree::initFunctions();
 
+FuncTree::FuncTree(double d){
+   this->val = new double(d);
+   this->mode = type::VALUE;
+   this->lchild = NULL;
+   this->rchild = NULL;
+}
+
+FuncTree::FuncTree(char c, bool operation = true){
+   this->lchild = NULL;
+   this->rchild = NULL;
+   this->val = new char(c);
+   if(operation){
+      this->mode = type::OPERATOR;
+      this->op_func = getOpFunc(c);
+   }else{
+      this->mode = type::VARIABLE;
+   }
+
+}
+
+FuncTree::FuncTree( double(*val_func)(double), string name){
+   this->mode = type::VALUE_FUNC;
+   this->val = new string(name);
+   this->val_func = val_func;
+   this->lchild = NULL;
+   this->rchild = NULL;
+}
+
+FuncTree::~FuncTree(){
+   if(lchild != NULL)
+      delete lchild;
+   if(rchild != NULL)
+      delete rchild;
+   //could be switch
+   if(this->mode == type::VALUE){
+      delete (double*)this->val;
+   }
+   else if(this->mode == type::VALUE_FUNC){
+      delete (string*)this->val;
+   }
+   else{
+      delete (char*)this->val;
+   }
+   return;
+}
+
+void FuncTree::print(){
+   std::cout << "(";
+   if(lchild != NULL){
+      lchild->print();
+   }
+
+   switch(this->mode){
+      case VALUE:
+         std::cout << *(double*)this->val;
+         break;
+      case VALUE_FUNC:
+         std::cout << *(string*)this->val;
+         break;
+      default:
+         std::cout << *(char*)this->val;
+      break;
+   }
+
+   if(rchild != NULL)
+      rchild->print();
+   std::cout << ")";
+}
+
+string FuncTree::repr(){
+   std::stringstream out;
+   repr_help(out);
+   return out.str();
+}
+
+void FuncTree::repr_help(std::stringstream &out){
+   out << "(";
+   if(lchild != NULL){
+      lchild->repr_help(out);
+   }
+
+   switch(this->mode){
+      case VALUE:
+         out << *(double*)this->val;
+         break;
+      case VALUE_FUNC:
+         out << *(string*)this->val;
+         break;
+      default:
+         out << *(char*)this->val;
+      break;
+   }
+
+   if(rchild != NULL)
+      rchild->repr_help(out);
+   out << ")";
+}
+
+double FuncTree::evaluate(double eval_at){
+   if(this->mode == type::VALUE){
+      return *((double*)(this->val));
+   }
+   else if(this->mode == type::VALUE_FUNC){
+      return val_func(this->lchild->evaluate(eval_at));
+   }
+   else if(this->mode == type::OPERATOR){
+      return op_func(this->lchild->evaluate(eval_at), this->rchild->evaluate(eval_at));
+   }
+   else{//this->mode == type::VARIABLE
+      return eval_at;
+   }
+}
+
+void FuncTree::updateOperation(char c){
+   if(mode != type::OPERATOR){
+      throw std::invalid_argument("Parse Error: attempt to update non operator");
+   }
+   else{
+      *(char*)this->val = c;
+      this->op_func = getOpFunc(c);
+   }
+}
+
+char FuncTree::getOperation(){
+   if(this->mode == type::OPERATOR){
+      return *((char*)this->val);
+   }
+   throw function_structure("Parse Error: attempt to get operation of non-operator");
+}
+
+/*
+ *  \/ Static Functions \/
+ */
+
+int FuncTree::findChar(const char *cstr, char c){
+   int pos = 0;
+   while(*(cstr + pos) != '\0'){
+      if(c == *(cstr + pos))
+         return pos;
+      pos += 1;
+   }
+   return -1;
+}
+
+void FuncTree::consumeSpaces(string::iterator &it){
+   /* depends on last character in string always being ')'
+   if string ends in spaces, can advance beyond end of string and
+   cause undefined behavior */
+   while(*it == ' ' /*&& *it != ')'*/) it++;
+}
+
+string FuncTree::getSymbol(string::iterator &it){
+   //symbols can only have english alphabetic characters
+   auto start = it;
+   while(isalpha(*it)) it++;
+   return string(start, it);
+}
+
 //increments begin to character beyond last character in the found number
 double FuncTree::doublefromString(
    std::string::iterator &begin,
