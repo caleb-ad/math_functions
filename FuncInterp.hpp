@@ -89,17 +89,7 @@ private:
 
    static FuncTree* sub_func(string::iterator &it, string &func);
 
-   static double doublefromString(std::string::iterator &begin, string &func);
-
-   static void expectValue(FuncTree*& current, string::iterator &iter, string &func);
-
-   static void expectOperator(char &op, string::iterator &iter);
-
-   static void insertOperation(std::stack<FuncTree* > &funcs, char op, FuncTree *&root);
-
-   static int findChar(const char *cstr, char c);
-
-   static void consumeSpaces(string::iterator &it);
+   void repr_help(std::stringstream &out);
 
    static f_operation getOpFunc(char c){
       switch(c){
@@ -112,13 +102,33 @@ private:
       }
    }
 
-   static string getSymbol(string::iterator &it);
-
    void updateOperation(char c);
 
    char getOperation();
 
-   void repr_help(std::stringstream &out);
+   static inline int findChar(const char *cstr, char c);
+
+   static inline void consumeSpaces(string::iterator &it);
+
+   static inline string getSymbol(string::iterator &it);
+
+   //increments begin to character beyond last character in the found number
+   static inline double doublefromString(
+      std::string::iterator &begin,
+      string &func);
+
+   static inline void expectValue(
+      FuncTree*& valNode,
+      string::iterator &iter,
+      string &func);
+
+   static inline void expectOperator(char &op, string::iterator &iter);
+
+   static inline void insertOperation(
+      std::stack<FuncTree* > &funcs,
+      char op,
+      FuncTree *&root);
+
 
    static double add(double a, double b){
       return a + b;

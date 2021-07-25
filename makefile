@@ -12,8 +12,8 @@ tests.exe: FuncInterp.o FuncInterp_test.cpp
 FuncInterp.o: FuncInterp.cpp FuncInterp.hpp func_except.hpp
 	g++ -Wall -Werror -o FuncInterp.o -c FuncInterp.cpp
 
-func_cmd.exe: FuncInterp.cpp FuncInterp.hpp CMDtool.cpp func_except.hpp
-	g++ -Wall -Werror -o func_cmd.exe FuncInterp.cpp CMDtool.cpp
+CMDtool.exe: FuncInterp.cpp FuncInterp.hpp CMDtool.cpp func_except.hpp
+	g++ -Wall -Werror -o CMDtool.exe FuncInterp.cpp CMDtool.cpp
 
 clean:
 	rm *.o; rm *.exe; rm *.obj

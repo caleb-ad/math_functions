@@ -31,7 +31,7 @@ FuncTree::FuncTree(double d){
    this->rchild = NULL;
 }
 
-FuncTree::FuncTree(char c, bool operation = true){
+FuncTree::FuncTree(char c, bool operation){
    this->lchild = NULL;
    this->rchild = NULL;
    this->val = new char(c);
@@ -137,7 +137,7 @@ double FuncTree::evaluate(double eval_at){
    }
 }
 
-void FuncTree::updateOperation(char c){
+inline void FuncTree::updateOperation(char c){
    if(mode != type::OPERATOR){
       throw std::invalid_argument("Parse Error: attempt to update non operator");
    }
@@ -147,7 +147,7 @@ void FuncTree::updateOperation(char c){
    }
 }
 
-char FuncTree::getOperation(){
+inline char FuncTree::getOperation(){
    if(this->mode == type::OPERATOR){
       return *((char*)this->val);
    }
@@ -158,7 +158,7 @@ char FuncTree::getOperation(){
  *  \/ Static Functions \/
  */
 
-int FuncTree::findChar(const char *cstr, char c){
+inline int FuncTree::findChar(const char *cstr, char c){
    int pos = 0;
    while(*(cstr + pos) != '\0'){
       if(c == *(cstr + pos))
@@ -168,14 +168,14 @@ int FuncTree::findChar(const char *cstr, char c){
    return -1;
 }
 
-void FuncTree::consumeSpaces(string::iterator &it){
+inline void FuncTree::consumeSpaces(string::iterator &it){
    /* depends on last character in string always being ')'
    if string ends in spaces, can advance beyond end of string and
    cause undefined behavior */
    while(*it == ' ' /*&& *it != ')'*/) it++;
 }
 
-string FuncTree::getSymbol(string::iterator &it){
+inline string FuncTree::getSymbol(string::iterator &it){
    //symbols can only have english alphabetic characters
    auto start = it;
    while(isalpha(*it)) it++;
@@ -183,7 +183,7 @@ string FuncTree::getSymbol(string::iterator &it){
 }
 
 //increments begin to character beyond last character in the found number
-double FuncTree::doublefromString(
+inline double FuncTree::doublefromString(
    std::string::iterator &begin,
    string &func)
 {
